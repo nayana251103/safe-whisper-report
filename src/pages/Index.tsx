@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, Lock, FileText, Search } from 'lucide-react';
+import { Shield, Lock, FileText, Search, Users, UserCheck, Eye } from 'lucide-react';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -25,12 +25,18 @@ const Index = () => {
       case 'status':
         navigate('/status');
         break;
+      case 'admin-login':
+      case 'moderator-login':
+      case 'inspector-login':
+        // For now, redirect to the same login page - can be customized later
+        navigate('/login', { state: { role: option.replace('-login', '') } });
+        break;
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-4xl space-y-8">
+      <div className="w-full max-w-6xl space-y-8">
         {/* Header */}
         <div className="text-center space-y-4 animate-fade-in">
           <div className="flex items-center justify-center space-x-3 mb-6">
@@ -111,6 +117,76 @@ const Index = () => {
               </Button>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Staff Login Section */}
+        <div className="mt-12">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-bold text-whisper-dark mb-2">Staff Access</h2>
+            <p className="text-gray-600">Login as Admin, Moderator, or Inspector</p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+            {/* Admin Login */}
+            <Card className="whisper-card hover:scale-105 transition-transform duration-200 cursor-pointer">
+              <CardContent className="pt-6 text-center">
+                <div className="flex justify-center mb-4">
+                  <div className="p-3 bg-gradient-to-r from-red-500 to-red-600 rounded-full">
+                    <Users className="h-6 w-6 text-white" />
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold text-whisper-dark mb-2">Admin</h3>
+                <p className="text-sm text-gray-600 mb-4">Manage departments, users, and system settings</p>
+                <Button 
+                  onClick={() => handleOptionSelect('admin-login')}
+                  className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white"
+                  size="sm"
+                >
+                  Admin Login
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Moderator Login */}
+            <Card className="whisper-card hover:scale-105 transition-transform duration-200 cursor-pointer">
+              <CardContent className="pt-6 text-center">
+                <div className="flex justify-center mb-4">
+                  <div className="p-3 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full">
+                    <UserCheck className="h-6 w-6 text-white" />
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold text-whisper-dark mb-2">Moderator</h3>
+                <p className="text-sm text-gray-600 mb-4">Monitor and manage reports across departments</p>
+                <Button 
+                  onClick={() => handleOptionSelect('moderator-login')}
+                  className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
+                  size="sm"
+                >
+                  Moderator Login
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Inspector Login */}
+            <Card className="whisper-card hover:scale-105 transition-transform duration-200 cursor-pointer">
+              <CardContent className="pt-6 text-center">
+                <div className="flex justify-center mb-4">
+                  <div className="p-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full">
+                    <Eye className="h-6 w-6 text-white" />
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold text-whisper-dark mb-2">Inspector</h3>
+                <p className="text-sm text-gray-600 mb-4">Investigate and resolve specific reports</p>
+                <Button 
+                  onClick={() => handleOptionSelect('inspector-login')}
+                  className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white"
+                  size="sm"
+                >
+                  Inspector Login
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         {/* Status Check */}
