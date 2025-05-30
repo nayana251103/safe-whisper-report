@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,11 +10,15 @@ import { useToast } from '@/hooks/use-toast';
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     userId: '',
     password: ''
   });
+
+  // Get the role from the navigation state
+  const role = location.state?.role;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,15 +33,24 @@ const Login = () => {
     }
 
     // Simulate login logic
-    console.log('Login attempt:', formData);
+    console.log('Login attempt:', formData, 'Role:', role);
     
     toast({
       title: "Login Successful",
-      description: "Welcome back to Secure Whisper"
+      description: `Welcome back to Secure Whisper${role ? ` - ${role.charAt(0).toUpperCase() + role.slice(1)}` : ''}`
     });
     
-    // Navigate to company code entry
-    navigate('/company-code');
+    // Navigate based on role
+    if (role === 'admin') {
+      navigate('/admin');
+    } else if (role === 'moderator') {
+      navigate('/moderator');
+    } else if (role === 'inspector') {
+      navigate('/investigator');
+    } else {
+      // Regular user login - navigate to company code entry
+      navigate('/company-code');
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,6 +58,20 @@ const Login = () => {
       ...formData,
       [e.target.name]: e.target.value
     });
+  };
+
+  const getTitle = () => {
+    if (role) {
+      return `${role.charAt(0).toUpperCase() + role.slice(1)} Login`;
+    }
+    return 'Login';
+  };
+
+  const getDescription = () => {
+    if (role) {
+      return `Enter your ${role} credentials to access your dashboard`;
+    }
+    return 'Enter your User ID and password to access your account';
   };
 
   return (
@@ -62,7 +89,7 @@ const Login = () => {
           
           <div className="flex items-center justify-center space-x-3 mb-4">
             <Shield className="h-8 w-8 text-whisper-primary" />
-            <h1 className="text-2xl font-bold text-whisper-dark">Login</h1>
+            <h1 className="text-2xl font-bold text-whisper-dark">{getTitle()}</h1>
           </div>
         </div>
 
@@ -70,22 +97,22 @@ const Login = () => {
           <CardHeader>
             <CardTitle>Welcome Back</CardTitle>
             <CardDescription>
-              Enter your User ID and password to access your account
+              {getDescription()}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="userId">User ID</Label>
+                <Label htmlFor="userId">{role ? 'Staff ID' : 'User ID'}</Label>
                 <Input
                   id="userId"
                   name="userId"
                   type="text"
-                  placeholder="Enter your 8-digit User ID"
+                  placeholder={role ? 'Enter your Staff ID' : 'Enter your 8-digit User ID'}
                   className="whisper-input"
                   value={formData.userId}
                   onChange={handleInputChange}
-                  maxLength={8}
+                  maxLength={role ? undefined : 8}
                 />
               </div>
 
@@ -103,22 +130,24 @@ const Login = () => {
               </div>
 
               <Button type="submit" className="w-full whisper-button" size="lg">
-                Login
+                {role ? `Login as ${role.charAt(0).toUpperCase() + role.slice(1)}` : 'Login'}
               </Button>
             </form>
 
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
-                Don't have an account?{' '}
-                <Button
-                  variant="link"
-                  onClick={() => navigate('/signup')}
-                  className="p-0 text-whisper-secondary hover:text-whisper-primary"
-                >
-                  Sign up here
-                </Button>
-              </p>
-            </div>
+            {!role && (
+              <div className="mt-6 text-center">
+                <p className="text-sm text-gray-600">
+                  Don't have an account?{' '}
+                  <Button
+                    variant="link"
+                    onClick={() => navigate('/signup')}
+                    className="p-0 text-whisper-secondary hover:text-whisper-primary"
+                  >
+                    Sign up here
+                  </Button>
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

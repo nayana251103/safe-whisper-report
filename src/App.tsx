@@ -12,6 +12,8 @@ import CompanyCode from "./pages/CompanyCode";
 import ReportForm from "./pages/ReportForm";
 import StatusCheck from "./pages/StatusCheck";
 import AdminDashboard from "./pages/AdminDashboard";
+import ModeratorDashboard from "./pages/ModeratorDashboard";
+import InvestigatorDashboard from "./pages/InvestigatorDashboard";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +31,8 @@ const App = () => (
           <Route path="/report" element={<ReportForm />} />
           <Route path="/status" element={<StatusCheck />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/moderator" element={<ModeratorDashboard />} />
+          <Route path="/investigator" element={<InvestigatorDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
