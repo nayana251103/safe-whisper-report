@@ -24,10 +24,15 @@ const CompanyCode = () => {
           .from('companies')
           .select('name, code');
         
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching companies:', error);
+          return;
+        }
+        
+        console.log('Fetched companies:', data);
         setCompanies(data || []);
       } catch (error) {
-        console.error('Error fetching companies:', error);
+        console.error('Error in fetchCompanies:', error);
       }
     };
 
@@ -49,17 +54,32 @@ const CompanyCode = () => {
     setLoading(true);
 
     try {
+      console.log('Verifying company code:', companyCode.toUpperCase());
+      
       // Verify company code exists
       const { data, error } = await supabase
         .from('companies')
         .select('id, name, code')
         .eq('code', companyCode.toUpperCase())
-        .single();
+        .maybeSingle();
 
-      if (error || !data) {
+      console.log('Company verification result:', { data, error });
+
+      if (error) {
+        console.error('Supabase error:', error);
+        toast({
+          title: "Verification Error",
+          description: "Failed to verify company code. Please try again.",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (!data) {
         toast({
           title: "Invalid Code",
-          description: "Please enter a valid company code",
+          description: "Please enter a valid company code. Available codes: TECH001, GLOB002, INNO003",
           variant: "destructive"
         });
         setLoading(false);
@@ -68,15 +88,16 @@ const CompanyCode = () => {
 
       toast({
         title: "Company Code Verified",
-        description: `Welcome ${data.name}! You can now proceed to submit your report`
+        description: `Welcome to ${data.name}! You can now proceed to submit your report.`
       });
       
       // Navigate to report form with company info
       navigate('/report', { state: { company: data } });
     } catch (error) {
+      console.error('Error in handleSubmit:', error);
       toast({
         title: "Error",
-        description: "Failed to verify company code",
+        description: "An unexpected error occurred while verifying the company code",
         variant: "destructive"
       });
     } finally {
@@ -129,21 +150,21 @@ const CompanyCode = () => {
               {companies.length > 0 && (
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                   <p className="text-sm text-gray-700 mb-2">
-                    <strong>Available Companies:</strong>
+                    <strong>Available Test Companies:</strong>
                   </p>
                   <div className="space-y-1">
                     {companies.map((company) => (
                       <div key={company.code} className="text-xs text-gray-600">
-                        {company.name} - {company.code}
+                        {company.name} - <span className="font-mono font-bold">{company.code}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <p className="text-sm text-gray-700">
-                  <strong>Need help?</strong> Your company code should have been provided by your organization's HR department or compliance officer.
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-blue-800">
+                  <strong>For testing:</strong> Try using TECH001, GLOB002, or INNO003
                 </p>
               </div>
 
