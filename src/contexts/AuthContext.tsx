@@ -42,6 +42,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (error) throw error;
       setUserProfile(data);
+      
+      // Show the numeric user ID to the user if they just signed up
+      if (data?.numeric_user_id) {
+        console.log('User numeric ID:', data.numeric_user_id);
+      }
     } catch (error) {
       console.error('Error fetching user profile:', error);
     }

@@ -5,15 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, ArrowLeft } from 'lucide-react';
+import { Shield, ArrowLeft, Copy, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Signup = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signUp } = useAuth();
+  const { signUp, userProfile } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -65,13 +66,11 @@ const Signup = () => {
         return;
       }
 
+      setShowSuccess(true);
       toast({
         title: "Account Created Successfully",
-        description: "Please check your email for verification link"
+        description: "Your secure user ID has been generated"
       });
-
-      // Navigate to login or home
-      navigate('/');
     } catch (error) {
       toast({
         title: "Error",
@@ -89,6 +88,71 @@ const Signup = () => {
       [e.target.name]: e.target.value
     });
   };
+
+  const copyUserId = () => {
+    if (userProfile?.numeric_user_id) {
+      navigator.clipboard.writeText(userProfile.numeric_user_id);
+      toast({
+        title: "Copied!",
+        description: "User ID copied to clipboard"
+      });
+    }
+  };
+
+  if (showSuccess && userProfile?.numeric_user_id) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center space-x-3 mb-4">
+              <CheckCircle className="h-8 w-8 text-green-600" />
+              <h1 className="text-2xl font-bold text-whisper-dark">Account Created!</h1>
+            </div>
+          </div>
+
+          <Card className="whisper-card">
+            <CardHeader>
+              <CardTitle className="text-center text-green-600">Success!</CardTitle>
+              <CardDescription className="text-center">
+                Your secure account has been created. Please save your User ID for future reference.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+                <p className="text-sm text-blue-800 mb-2">
+                  <strong>Your 8-Digit User ID:</strong>
+                </p>
+                <div className="flex items-center justify-center space-x-2">
+                  <code className="text-2xl font-mono bg-white px-4 py-2 rounded border text-blue-900">
+                    {userProfile.numeric_user_id}
+                  </code>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={copyUserId}
+                    className="text-blue-600 hover:text-blue-800"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="text-xs text-blue-600 mt-2">
+                  Save this ID - you'll need it to submit reports with your account
+                </p>
+              </div>
+
+              <Button 
+                onClick={() => navigate('/')}
+                className="w-full whisper-button" 
+                size="lg"
+              >
+                Continue to Dashboard
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -113,7 +177,7 @@ const Signup = () => {
           <CardHeader>
             <CardTitle>Secure Registration</CardTitle>
             <CardDescription>
-              Create your secure account to submit and track reports
+              Create your secure account to submit and track reports. You'll receive a unique 8-digit User ID.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -162,7 +226,7 @@ const Signup = () => {
 
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-800">
-                  Your account will be secured with enterprise-grade encryption. You can submit and track reports while maintaining complete confidentiality.
+                  Upon registration, you'll receive a unique 8-digit User ID that you can use to submit reports while maintaining your privacy and security.
                 </p>
               </div>
 

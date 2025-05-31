@@ -1,352 +1,241 @@
-
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, Lock, FileText, Search, Users, UserCheck, Eye, LogOut } from 'lucide-react';
+import { Shield, Building, Search, Users, ArrowRight, Copy, User } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
   const navigate = useNavigate();
   const { user, userProfile, signOut } = useAuth();
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const { toast } = useToast();
 
-  const handleOptionSelect = (option: string) => {
-    setSelectedOption(option);
-    
-    switch (option) {
-      case 'login':
-        navigate('/login');
-        break;
-      case 'signup':
-        navigate('/signup');
-        break;
-      case 'anonymous':
-        navigate('/company-code');
-        break;
-      case 'status':
-        navigate('/status');
-        break;
-      case 'admin-login':
-      case 'moderator-login':
-      case 'inspector-login':
-        navigate('/login', { state: { role: option.replace('-login', '') } });
-        break;
+  const copyUserId = () => {
+    if (userProfile?.numeric_user_id) {
+      navigator.clipboard.writeText(userProfile.numeric_user_id);
+      toast({
+        title: "Copied!",
+        description: "User ID copied to clipboard"
+      });
     }
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
-  };
-
-  // If user is logged in, show different content
-  if (user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="w-full max-w-4xl space-y-8">
-          {/* Header with logout */}
-          <div className="text-center space-y-4 animate-fade-in">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center space-x-3">
-                <Shield className="h-8 w-8 text-whisper-primary" />
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-whisper-primary to-whisper-secondary bg-clip-text text-transparent">
-                  Secure Whisper
-                </h1>
-              </div>
-              <Button
-                variant="outline"
-                onClick={handleSignOut}
-                className="flex items-center space-x-2"
-              >
-                <LogOut className="h-4 w-4" />
-                <span>Sign Out</span>
-              </Button>
-            </div>
-            <p className="text-lg text-gray-600">
-              Welcome back, {userProfile?.email}! What would you like to do today?
-            </p>
-          </div>
-
-          {/* User Actions */}
-          <div className="grid md:grid-cols-2 gap-6">
-            <Card className="whisper-card hover:scale-105 transition-transform duration-200 cursor-pointer">
-              <CardHeader className="text-center">
-                <div className="flex justify-center mb-4">
-                  <div className="p-3 bg-gradient-to-r from-whisper-primary to-whisper-secondary rounded-full">
-                    <FileText className="h-8 w-8 text-white" />
-                  </div>
-                </div>
-                <CardTitle className="text-2xl text-whisper-dark">Submit New Report</CardTitle>
-                <CardDescription className="text-gray-600">
-                  Report workplace misconduct securely and confidentially
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button 
-                  onClick={() => navigate('/company-code')}
-                  className="w-full whisper-button"
-                  size="lg"
-                >
-                  Create Report
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="whisper-card hover:scale-105 transition-transform duration-200 cursor-pointer">
-              <CardHeader className="text-center">
-                <div className="flex justify-center mb-4">
-                  <div className="p-3 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full">
-                    <Search className="h-8 w-8 text-white" />
-                  </div>
-                </div>
-                <CardTitle className="text-2xl text-whisper-dark">Check Report Status</CardTitle>
-                <CardDescription className="text-gray-600">
-                  Track the progress of your submitted reports
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button 
-                  onClick={() => navigate('/status')}
-                  className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white"
-                  size="lg"
-                >
-                  Check Status
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Role-based dashboard access */}
-          {userProfile?.role && userProfile.role !== 'user' && (
-            <div className="mt-8">
-              <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-whisper-dark mb-2">Staff Dashboard</h2>
-                <p className="text-gray-600">Access your {userProfile.role} dashboard</p>
-              </div>
-              
-              <div className="flex justify-center">
-                <Card className="whisper-card hover:scale-105 transition-transform duration-200 cursor-pointer max-w-md">
-                  <CardContent className="pt-6 text-center">
-                    <div className="flex justify-center mb-4">
-                      <div className={`p-3 rounded-full ${
-                        userProfile.role === 'admin' ? 'bg-gradient-to-r from-red-500 to-red-600' :
-                        userProfile.role === 'moderator' ? 'bg-gradient-to-r from-orange-500 to-orange-600' :
-                        'bg-gradient-to-r from-purple-500 to-purple-600'
-                      }`}>
-                        {userProfile.role === 'admin' && <Users className="h-6 w-6 text-white" />}
-                        {userProfile.role === 'moderator' && <UserCheck className="h-6 w-6 text-white" />}
-                        {userProfile.role === 'investigator' && <Eye className="h-6 w-6 text-white" />}
-                      </div>
-                    </div>
-                    <h3 className="text-lg font-semibold text-whisper-dark mb-2 capitalize">{userProfile.role} Dashboard</h3>
-                    <p className="text-sm text-gray-600 mb-4">
-                      {userProfile.role === 'admin' && 'Manage system settings and user roles'}
-                      {userProfile.role === 'moderator' && 'Monitor and manage reports'}
-                      {userProfile.role === 'investigator' && 'Investigate and resolve reports'}
-                    </p>
-                    <Button 
-                      onClick={() => navigate(`/${userProfile.role}`)}
-                      className={`w-full text-white ${
-                        userProfile.role === 'admin' ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700' :
-                        userProfile.role === 'moderator' ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700' :
-                        'bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700'
-                      }`}
-                      size="sm"
-                    >
-                      Open Dashboard
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  // Original homepage for non-authenticated users
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-6xl space-y-8">
-        {/* Header */}
-        <div className="text-center space-y-4 animate-fade-in">
-          <div className="flex items-center justify-center space-x-3 mb-6">
-            <Shield className="h-12 w-12 text-whisper-primary" />
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-whisper-primary to-whisper-secondary bg-clip-text text-transparent">
-              Secure Whisper
-            </h1>
-          </div>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            A secure, anonymous platform for reporting workplace misconduct, harassment, fraud, and unethical behavior
-          </p>
-          <div className="flex items-center justify-center space-x-6 text-sm text-gray-500">
-            <div className="flex items-center space-x-2">
-              <Lock className="h-4 w-4" />
-              <span>100% Confidential</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Shield className="h-4 w-4" />
-              <span>Secure & Anonymous</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Options */}
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Report With Login */}
-          <Card className="whisper-card hover:scale-105 transition-transform duration-200 cursor-pointer group">
-            <CardHeader className="text-center">
-              <div className="flex justify-center mb-4">
-                <div className="p-3 bg-gradient-to-r from-whisper-primary to-whisper-secondary rounded-full">
-                  <FileText className="h-8 w-8 text-white" />
-                </div>
-              </div>
-              <CardTitle className="text-2xl text-whisper-dark">Report With Account</CardTitle>
-              <CardDescription className="text-gray-600">
-                Create an account or login to submit and track your reports
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Button 
-                onClick={() => handleOptionSelect('signup')}
-                className="w-full whisper-button"
-                size="lg"
-              >
-                Create Account
-              </Button>
-              <Button 
-                onClick={() => handleOptionSelect('login')}
-                variant="outline" 
-                className="w-full border-whisper-primary text-whisper-primary hover:bg-whisper-primary hover:text-white"
-                size="lg"
-              >
-                Login
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Report Without Login */}
-          <Card className="whisper-card hover:scale-105 transition-transform duration-200 cursor-pointer group">
-            <CardHeader className="text-center">
-              <div className="flex justify-center mb-4">
-                <div className="p-3 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full">
-                  <Shield className="h-8 w-8 text-white" />
-                </div>
-              </div>
-              <CardTitle className="text-2xl text-whisper-dark">Anonymous Report</CardTitle>
-              <CardDescription className="text-gray-600">
-                Submit a report without creating an account
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button 
-                onClick={() => handleOptionSelect('anonymous')}
-                className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
-                size="lg"
-              >
-                Report Anonymously
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Staff Login Section */}
-        <div className="mt-12">
-          <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-whisper-dark mb-2">Staff Access</h2>
-            <p className="text-gray-600">Login as Admin, Moderator, or Inspector</p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="flex items-center space-x-3">
+            <Shield className="h-8 w-8 text-whisper-primary" />
+            <h1 className="text-2xl font-bold text-whisper-dark">Secure Whisper</h1>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-4 max-w-4xl mx-auto">
-            {/* Admin Login */}
-            <Card className="whisper-card hover:scale-105 transition-transform duration-200 cursor-pointer">
-              <CardContent className="pt-6 text-center">
-                <div className="flex justify-center mb-4">
-                  <div className="p-3 bg-gradient-to-r from-red-500 to-red-600 rounded-full">
-                    <Users className="h-6 w-6 text-white" />
+          <div className="flex items-center space-x-4">
+            {user ? (
+              <>
+                {userProfile?.numeric_user_id && (
+                  <div className="flex items-center space-x-2 bg-blue-50 px-3 py-2 rounded-lg">
+                    <User className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm text-blue-800">ID: {userProfile.numeric_user_id}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={copyUserId}
+                      className="h-6 w-6 p-0 text-blue-600 hover:text-blue-800"
+                    >
+                      <Copy className="h-3 w-3" />
+                    </Button>
                   </div>
-                </div>
-                <h3 className="text-lg font-semibold text-whisper-dark mb-2">Admin</h3>
-                <p className="text-sm text-gray-600 mb-4">Manage departments, users, and system settings</p>
+                )}
+                <span className="text-sm text-gray-600">Welcome, {user.email}</span>
                 <Button 
-                  onClick={() => handleOptionSelect('admin-login')}
-                  className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white"
-                  size="sm"
+                  variant="outline" 
+                  onClick={signOut}
+                  className="text-whisper-secondary border-whisper-secondary hover:bg-whisper-secondary hover:text-white"
                 >
-                  Admin Login
+                  Sign Out
                 </Button>
-              </CardContent>
-            </Card>
+              </>
+            ) : (
+              <div className="space-x-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate('/login')}
+                  className="text-whisper-secondary border-whisper-secondary hover:bg-whisper-secondary hover:text-white"
+                >
+                  Login
+                </Button>
+                <Button 
+                  onClick={() => navigate('/signup')}
+                  className="whisper-button"
+                >
+                  Sign Up
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
 
-            {/* Moderator Login */}
-            <Card className="whisper-card hover:scale-105 transition-transform duration-200 cursor-pointer">
-              <CardContent className="pt-6 text-center">
-                <div className="flex justify-center mb-4">
-                  <div className="p-3 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full">
-                    <UserCheck className="h-6 w-6 text-white" />
-                  </div>
-                </div>
-                <h3 className="text-lg font-semibold text-whisper-dark mb-2">Moderator</h3>
-                <p className="text-sm text-gray-600 mb-4">Monitor and manage reports across departments</p>
-                <Button 
-                  onClick={() => handleOptionSelect('moderator-login')}
-                  className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
-                  size="sm"
-                >
-                  Moderator Login
-                </Button>
-              </CardContent>
-            </Card>
+      {/* Hero Section */}
+      <section className="container mx-auto px-4 py-16 text-center">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-5xl font-bold text-whisper-dark mb-6">
+            Speak Up Safely
+          </h2>
+          <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+            A secure platform for reporting workplace misconduct, safety violations, and ethical concerns. 
+            Your voice matters, and your privacy is protected.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Button 
+              size="lg" 
+              className="whisper-button text-lg px-8 py-4"
+              onClick={() => navigate('/company-code')}
+            >
+              Submit a Report
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+            <Button 
+              variant="outline" 
+              size="lg"
+              className="text-whisper-secondary border-whisper-secondary hover:bg-whisper-secondary hover:text-white text-lg px-8 py-4"
+              onClick={() => navigate('/status')}
+            >
+              Check Report Status
+              <Search className="ml-2 h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+      </section>
 
-            {/* Inspector Login */}
-            <Card className="whisper-card hover:scale-105 transition-transform duration-200 cursor-pointer">
-              <CardContent className="pt-6 text-center">
-                <div className="flex justify-center mb-4">
-                  <div className="p-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full">
-                    <Eye className="h-6 w-6 text-white" />
-                  </div>
-                </div>
-                <h3 className="text-lg font-semibold text-whisper-dark mb-2">Inspector</h3>
-                <p className="text-sm text-gray-600 mb-4">Investigate and resolve specific reports</p>
-                <Button 
-                  onClick={() => handleOptionSelect('inspector-login')}
-                  className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white"
-                  size="sm"
-                >
-                  Inspector Login
-                </Button>
-              </CardContent>
+      {/* Features Section */}
+      <section className="container mx-auto px-4 py-12">
+        <div className="text-center mb-12">
+          <h3 className="text-3xl font-bold text-whisper-dark mb-4">Key Features</h3>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Explore the features that make Secure Whisper the ideal platform for secure and anonymous reporting.
+          </p>
+        </div>
+        
+        <div className="grid md:grid-cols-3 gap-8">
+          <Card className="whisper-card hover:shadow-lg transition-shadow">
+            <CardHeader className="text-center">
+              <Shield className="h-12 w-12 text-whisper-primary mx-auto mb-4" />
+              <CardTitle>Anonymous Reporting</CardTitle>
+              <CardDescription>
+                Submit reports without revealing your identity.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+          
+          <Card className="whisper-card hover:shadow-lg transition-shadow">
+            <CardHeader className="text-center">
+              <Building className="h-12 w-12 text-whisper-primary mx-auto mb-4" />
+              <CardTitle>Company Code Verification</CardTitle>
+              <CardDescription>
+                Ensure your report reaches the correct organization.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+          
+          <Card className="whisper-card hover:shadow-lg transition-shadow">
+            <CardHeader className="text-center">
+              <Search className="h-12 w-12 text-whisper-primary mx-auto mb-4" />
+              <CardTitle>Real-time Status Tracking</CardTitle>
+              <CardDescription>
+                Track the progress of your report with complete transparency.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+      </section>
+      
+      {/* Staff Access Section */}
+      <section className="bg-gray-50 py-16">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h3 className="text-3xl font-bold text-whisper-dark mb-4">Staff Access</h3>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Authorized personnel can access specialized dashboards for managing reports and investigations.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            <Card className="whisper-card hover:shadow-lg transition-shadow cursor-pointer" 
+                  onClick={() => navigate('/login', { state: { role: 'admin' } })}>
+              <CardHeader className="text-center">
+                <Users className="h-12 w-12 text-whisper-primary mx-auto mb-4" />
+                <CardTitle>Admin Dashboard</CardTitle>
+                <CardDescription>
+                  Full system management and oversight capabilities
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            
+            <Card className="whisper-card hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => navigate('/login', { state: { role: 'moderator' } })}>
+              <CardHeader className="text-center">
+                <Shield className="h-12 w-12 text-whisper-primary mx-auto mb-4" />
+                <CardTitle>Moderator Access</CardTitle>
+                <CardDescription>
+                  Review and moderate incoming reports
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            
+            <Card className="whisper-card hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => navigate('/login', { state: { role: 'inspector' } })}>
+              <CardHeader className="text-center">
+                <Search className="h-12 w-12 text-whisper-primary mx-auto mb-4" />
+                <CardTitle>Investigator Portal</CardTitle>
+                <CardDescription>
+                  Conduct detailed investigations and follow-ups
+                </CardDescription>
+              </CardHeader>
             </Card>
           </div>
         </div>
+      </section>
 
-        {/* Status Check */}
-        <div className="text-center">
-          <Card className="whisper-card max-w-md mx-auto">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-center space-x-2 mb-4">
-                <Search className="h-5 w-5 text-whisper-secondary" />
-                <span className="text-whisper-dark font-medium">Check Report Status</span>
+      {/* Footer */}
+      <footer className="bg-whisper-dark text-white py-12">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-3 gap-8">
+            <div>
+              <div className="flex items-center space-x-3 mb-4">
+                <Shield className="h-6 w-6" />
+                <h4 className="text-lg font-semibold">Secure Whisper</h4>
               </div>
-              <Button 
-                onClick={() => handleOptionSelect('status')}
-                variant="ghost"
-                className="text-whisper-secondary hover:text-whisper-primary hover:bg-whisper-primary/10"
-              >
-                Check status using Reference ID
-              </Button>
-            </CardContent>
-          </Card>
+              <p className="text-gray-300">
+                Empowering voices while protecting identities. Your security is our priority.
+              </p>
+            </div>
+            
+            <div>
+              <h5 className="font-semibold mb-4">Quick Links</h5>
+              <ul className="space-y-2 text-gray-300">
+                <li><Button variant="link" className="text-gray-300 hover:text-white p-0 h-auto" onClick={() => navigate('/company-code')}>Submit Report</Button></li>
+                <li><Button variant="link" className="text-gray-300 hover:text-white p-0 h-auto" onClick={() => navigate('/status')}>Check Status</Button></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h5 className="font-semibold mb-4">Security</h5>
+              <ul className="space-y-2 text-gray-300">
+                <li>End-to-end encryption</li>
+                <li>Anonymous reporting</li>
+                <li>Secure data handling</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-300">
+            <p>&copy; 2024 Secure Whisper. All rights reserved.</p>
+          </div>
         </div>
-
-        {/* Footer */}
-        <div className="text-center text-sm text-gray-500 space-y-2">
-          <p>Your identity and reports are protected by enterprise-grade encryption</p>
-          <p>For urgent matters requiring immediate attention, please contact your local authorities</p>
-        </div>
-      </div>
+      </footer>
     </div>
   );
 };
