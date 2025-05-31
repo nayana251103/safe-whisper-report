@@ -9,16 +9,170 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      companies: {
+        Row: {
+          code: string
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          department: string | null
+          email: string | null
+          id: string
+          role: Database["public"]["Enums"]["user_role"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          department?: string | null
+          email?: string | null
+          id: string
+          role?: Database["public"]["Enums"]["user_role"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          department?: string | null
+          email?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      report_comments: {
+        Row: {
+          comment: string
+          created_at: string | null
+          id: string
+          is_internal: boolean | null
+          report_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          comment: string
+          created_at?: string | null
+          id?: string
+          is_internal?: boolean | null
+          report_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          comment?: string
+          created_at?: string | null
+          id?: string
+          is_internal?: boolean | null
+          report_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_comments_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reports: {
+        Row: {
+          assigned_to: string | null
+          category: Database["public"]["Enums"]["report_category"]
+          company_id: string | null
+          created_at: string | null
+          department: string | null
+          description: string
+          id: string
+          is_anonymous: boolean | null
+          reference_id: string
+          reporter_id: string | null
+          status: Database["public"]["Enums"]["report_status"] | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          category: Database["public"]["Enums"]["report_category"]
+          company_id?: string | null
+          created_at?: string | null
+          department?: string | null
+          description: string
+          id?: string
+          is_anonymous?: boolean | null
+          reference_id: string
+          reporter_id?: string | null
+          status?: Database["public"]["Enums"]["report_status"] | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          category?: Database["public"]["Enums"]["report_category"]
+          company_id?: string | null
+          created_at?: string | null
+          department?: string | null
+          description?: string
+          id?: string
+          is_anonymous?: boolean | null
+          reference_id?: string
+          reporter_id?: string | null
+          status?: Database["public"]["Enums"]["report_status"] | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_reference_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
-      [_ in never]: never
+      report_category:
+        | "harassment"
+        | "discrimination"
+        | "fraud"
+        | "safety_violation"
+        | "corruption"
+        | "other"
+      report_status:
+        | "pending"
+        | "under_review"
+        | "investigating"
+        | "resolved"
+        | "closed"
+      user_role: "admin" | "moderator" | "investigator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +287,23 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      report_category: [
+        "harassment",
+        "discrimination",
+        "fraud",
+        "safety_violation",
+        "corruption",
+        "other",
+      ],
+      report_status: [
+        "pending",
+        "under_review",
+        "investigating",
+        "resolved",
+        "closed",
+      ],
+      user_role: ["admin", "moderator", "investigator", "user"],
+    },
   },
 } as const

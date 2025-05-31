@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,13 +7,34 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Building, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const CompanyCode = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [companyCode, setCompanyCode] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [companies, setCompanies] = useState<any[]>([]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    // Fetch available companies for demonstration
+    const fetchCompanies = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('companies')
+          .select('name, code');
+        
+        if (error) throw error;
+        setCompanies(data || []);
+      } catch (error) {
+        console.error('Error fetching companies:', error);
+      }
+    };
+
+    fetchCompanies();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!companyCode.trim()) {
@@ -25,26 +46,42 @@ const CompanyCode = () => {
       return;
     }
 
-    // Simulate company code validation
-    console.log('Company code entered:', companyCode);
-    
-    // For demo purposes, accept any non-empty code
-    if (companyCode.trim().length < 3) {
+    setLoading(true);
+
+    try {
+      // Verify company code exists
+      const { data, error } = await supabase
+        .from('companies')
+        .select('id, name, code')
+        .eq('code', companyCode.toUpperCase())
+        .single();
+
+      if (error || !data) {
+        toast({
+          title: "Invalid Code",
+          description: "Please enter a valid company code",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
       toast({
-        title: "Invalid Code",
-        description: "Please enter a valid company code",
+        title: "Company Code Verified",
+        description: `Welcome ${data.name}! You can now proceed to submit your report`
+      });
+      
+      // Navigate to report form with company info
+      navigate('/report', { state: { company: data } });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to verify company code",
         variant: "destructive"
       });
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    toast({
-      title: "Company Code Verified",
-      description: "You can now proceed to submit your report"
-    });
-    
-    // Navigate to report form
-    navigate('/report');
   };
 
   return (
@@ -85,8 +122,24 @@ const CompanyCode = () => {
                   className="whisper-input text-center font-mono text-lg"
                   value={companyCode}
                   onChange={(e) => setCompanyCode(e.target.value.toUpperCase())}
+                  disabled={loading}
                 />
               </div>
+
+              {companies.length > 0 && (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-700 mb-2">
+                    <strong>Available Companies:</strong>
+                  </p>
+                  <div className="space-y-1">
+                    {companies.map((company) => (
+                      <div key={company.code} className="text-xs text-gray-600">
+                        {company.name} - {company.code}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                 <p className="text-sm text-gray-700">
@@ -94,8 +147,13 @@ const CompanyCode = () => {
                 </p>
               </div>
 
-              <Button type="submit" className="w-full whisper-button" size="lg">
-                Verify & Continue
+              <Button 
+                type="submit" 
+                className="w-full whisper-button" 
+                size="lg"
+                disabled={loading}
+              >
+                {loading ? 'Verifying...' : 'Verify & Continue'}
               </Button>
             </form>
 
